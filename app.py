@@ -89,23 +89,17 @@ elif menu == "Visualization":
     fig = px.scatter(df, x=x_axis, y=y_axis, color=color_by)
     st.plotly_chart(fig)
 
-# Model Prediction
-
+# ---- Model Prediction ----
 elif menu == "Model Prediction":
     st.header("Make a Prediction")
-
-    # Select all features except target
-    features = [col for col in df.columns if col != "target"]  # <-- change 'target'
+    features = [col for col in df.columns if col != "target"]
     user_inputs = {}
 
     st.markdown("### Enter feature values:")
     for col in features:
         if np.issubdtype(df[col].dtype, np.number):
             user_inputs[col] = st.number_input(
-                f"{col}", 
-                float(df[col].min()), 
-                float(df[col].max()), 
-                float(df[col].mean())
+                f"{col}", float(df[col].min()), float(df[col].max()), float(df[col].mean())
             )
         else:
             user_inputs[col] = st.selectbox(f"{col}", df[col].unique())
@@ -113,7 +107,7 @@ elif menu == "Model Prediction":
     input_df = pd.DataFrame([user_inputs])
 
     if st.button("Predict"):
-        with st.spinner("Predicting..."):
+        if model is not None:
             try:
                 pred = model.predict(input_df)[0]
                 st.success(f"Prediction: {pred}")
@@ -124,8 +118,9 @@ elif menu == "Model Prediction":
                     st.info(f"Prediction Confidence: {confidence:.2f}%")
             except Exception as e:
                 st.error(f"Error during prediction: {e}")
+        else:
+            st.warning("Model not loaded. Cannot predict.")
 
-# Model Performance
 
 # Model Performance
 elif menu == "Model Performance":
@@ -168,4 +163,5 @@ elif menu == "Model Performance":
 
     except FileNotFoundError:
         st.error("Test data files not found. Please run the training notebook to generate X_test.csv and y_test.csv.")
+
 
