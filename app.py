@@ -133,8 +133,8 @@ elif menu == "Model Performance":
 
     try:
         # Use raw strings for Windows paths and updated filenames
-        X_test = pd.read_csv(r"data\X_test.csv")
-        y_test = pd.read_csv(r"data\y_test.csv").values.ravel()
+        X_test = pd.read_csv(r"X_test.csv")
+        y_test = pd.read_csv(r"y_test.csv").values.ravel()
 
         # Optional: check if model is fitted
         from sklearn.utils.validation import check_is_fitted
@@ -168,3 +168,4 @@ elif menu == "Model Performance":
 
     except FileNotFoundError:
         st.error("Test data files not found. Please run the training notebook to generate X_test.csv and y_test.csv.")
+
