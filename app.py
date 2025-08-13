@@ -89,51 +89,31 @@ elif menu == "Visualization":
     fig = px.scatter(df, x=x_axis, y=y_axis, color=color_by)
     st.plotly_chart(fig)
 
-# Model Prediction 
+# Model Prediction
+
 elif menu == "Model Prediction":
     st.header("Make a Prediction")
 
-    # List of features used during training (must match training)
-    model_features = joblib.load("model_features.pkl")  # saved during training
-    categorical_features = ['cp', 'restecg', 'slope', 'thal']  # example, adjust to your dataset
-
+    # Select all features except target
+    features = [col for col in df.columns if col != "target"]  # <-- change 'target'
     user_inputs = {}
+
     st.markdown("### Enter feature values:")
-
-    # Collect inputs
-    for col in model_features:
-        # Skip engineered or one-hot columns
-        if "_" in col:
-            continue
-        if col in categorical_features:
-            # Selectbox for categorical
-            unique_vals = df[col].unique() if col in df.columns else [0,1] 
-            user_inputs[col] = st.selectbox(f"{col}", unique_vals)
+    for col in features:
+        if np.issubdtype(df[col].dtype, np.number):
+            user_inputs[col] = st.number_input(
+                f"{col}", 
+                float(df[col].min()), 
+                float(df[col].max()), 
+                float(df[col].mean())
+            )
         else:
-            # Numeric input
-            min_val = float(df[col].min()) if col in df.columns else 0
-            max_val = float(df[col].max()) if col in df.columns else 100
-            mean_val = float(df[col].mean()) if col in df.columns else 0
-            user_inputs[col] = st.number_input(f"{col}", min_val, max_val, mean_val)
+            user_inputs[col] = st.selectbox(f"{col}", df[col].unique())
 
-    # Convert inputs to DataFrame
     input_df = pd.DataFrame([user_inputs])
 
-    # Preprocessing 
-    # One-hot encode categorical variables
-    input_df = pd.get_dummies(input_df)
-
-    # Add missing columns (from training)
-    for col in model_features:
-        if col not in input_df.columns:
-            input_df[col] = 0
-
-    # Ensure column order matches training
-    input_df = input_df[model_features]
-
-    # Predict 
     if st.button("Predict"):
-        if model is not None:
+        with st.spinner("Predicting..."):
             try:
                 pred = model.predict(input_df)[0]
                 st.success(f"Prediction: {pred}")
@@ -144,8 +124,7 @@ elif menu == "Model Prediction":
                     st.info(f"Prediction Confidence: {confidence:.2f}%")
             except Exception as e:
                 st.error(f"Error during prediction: {e}")
-        else:
-            st.warning("Model not loaded. Cannot predict.")
+
 
 
 # Model Performance
@@ -189,7 +168,3 @@ elif menu == "Model Performance":
 
     except FileNotFoundError:
         st.error("Test data files not found. Please run the training notebook to generate X_test.csv and y_test.csv.")
-
-
-
-
