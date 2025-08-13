@@ -163,8 +163,8 @@ elif menu == "Model Performance":
             ax.set_ylabel("Actual")
             st.pyplot(fig)
 
-            st.subheader("Model Comparison")
-            st.write("You can add multiple model scores here for comparison.")
+            
 
     except FileNotFoundError:
         st.error("Test data files not found. Please run the training notebook to generate X_test.csv and y_test.csv.")
+
